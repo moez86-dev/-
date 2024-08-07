@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ميز آب شقة عزاب</title>
+    <style>
+        body {
+            background-color: #59a5e8;
+            font-family: Arial, sans-serif;
+        }
+        .form-container {
+            margin: 20px;
+            padding: 20px;
+            border: 1px solid #053246;
+            border-radius: 10px;
+            background-color: #50a75a;
+            max-width: 400px;
+            margin: auto;
+        }
+        .form-container h2 {
+            margin-top: 0;
+            text-align: center;
+        }
+        .form-container label {
+            display: block;
+            margin-bottom: 10px;
+        }
+        .form-container input {
+            width: calc(100% - 20px);
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #fd5df8;
+            border-radius: 5px;
+        }
+        .form-container button {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #9eb69f;
+            color: rgb(24, 1, 1);
+            cursor: pointer;
+        }
+        .form-container button:hover {
+            background-color: #96c4f0;
+        }
+        #login-form {
+            display: block;
+        }
+        #expenses-form {
+            display: none;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #000;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<div class="form-container" id="login-form">
+    <h2>Login</h2>
+    <label for="username">Username:</label>
+    <input type="text" id="username" /><br><br>
+    <label for="password">Password:</label>
+    <input type="password" id="password" /><br><br>
+    <button onclick="login()">Login</button>
+    <div id="login-message" style="color: red; text-align: center;"></div>
+</div>
+
+<div id="expenses-form">
+    <div class="form-container" id="aboahmed-form">
+        <h2>أبوأحمد's Expense Form</h2>
+        <label for="aboahmed-amount">Enter Amount:</label>
+        <input type="number" id="aboahmed-amount" />
+        <button onclick="submitExpense('أبوأحمد')">Submit</button>
+    </div>
+
+    <div class="form-container" id="aboamr-form">
+        <h2>أبوعمر's Expense Form</h2>
+        <label for="aboamr-amount">Enter Amount:</label>
+        <input type="number" id="aboamr-amount" />
+        <button onclick="submitExpense('أبوعمر')">Submit</button>
+    </div>
+
+    <div class="form-container" id="abohoza-form">
+        <h2>أبوحمزة's Expense Form</h2>
+        <label for="abohoza-amount">Enter Amount:</label>
+        <input type="number" id="abohoza-amount" />
+        <button onclick="submitExpense('أبوحمزة')">Submit</button>
+    </div>
+
+    <div class="form-container" id="aboelyas-form">
+        <h2>أبوإلياس's Expense Form</h2>
+        <label for="aboelyas-amount">Enter Amount:</label>
+        <input type="number" id="aboelyas-amount" />
+        <button onclick="submitExpense('أبوإلياس')">Submit</button>
+    </div>
+
+    <div class="form-container" id="main-form">
+        <h2>Main Expense Form</h2>
+        <button onclick="calculateTotalExpenses()">Calculate Total Expenses</button>
+        <button onclick="resetExpenses()">Reset Expenses</button>
+        <div id="result"></div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('login-form').style.display = 'block';
+
+    function login() {
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        if (username === 'mohamed' && password === '111') {
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('expenses-form').style.display = 'block';
+            document.getElementById('login-message').innerText = '';
+        } else {
+            document.getElementById('login-message').innerText = 'Invalid username or password';
+        }
+    }
+
+    function submitExpense(person) {
+        const personIdMap = {
+            'أبوأحمد': 'aboahmed',
+            'أبوعمر': 'aboamr',
+            'أبوحمزة': 'abohoza',
+            'أبوإلياس': 'aboelyas'
+        };
+        const amountInput = document.getElementById(`${personIdMap[person]}-amount`);
+        const amount = parseFloat(amountInput.value);
+        if (isNaN(amount) || amount <= 0) {
+            alert('Please enter a valid amount');
+            return;
+        }
+        const expenses = JSON.parse(localStorage.getItem('expenses')) || {};
+        if (!expenses[person]) {
+            expenses[person] = [];
+        }
+        expenses[person].push(amount);
+        localStorage.setItem('expenses', JSON.stringify(expenses));
+        amountInput.value = '';
+        alert(`Expense of ${amount} saved for ${person}`);
+    }
+
+    function calculateTotalExpenses() {
+        const expenses = JSON.parse(localStorage.getItem('expenses')) || {};
+        let totalExpense = 0;
+        let resultText = `
+            <table>
+                <thead>
+                    <tr>
+                        <th>Person</th>
+                        <th>Total Expense</th>
+                        <th>Balance</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+        for (const person in expenses) {
+            const personTotal = expenses[person].reduce((a, b) => a + b, 0);
+            totalExpense += personTotal;
+        }
+        const share = totalExpense / 4;
+        
+        const balances = {};
+        for (const person in expenses) {
+            const personTotal = expenses[person].reduce((a, b) => a + b, 0);
+            balances[person] = personTotal - share;
+        }
+
+        for (const person in balances) {
+            resultText += `
+                <tr>
+                    <td>${person}</td>
+                    <td>${expenses[person].reduce((a, b) => a + b, 0)}</td>
+                    <td>${balances[person]}</td>
+                </tr>
+            `;
+        }
+
+        resultText += `
+                </tbody>
+            </table>
+            <br>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Payer</th>
+                        <th>Amount</th>
+                        <th>Receiver</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        const payers = [];
+        const receivers = [];
+        for (const person in balances) {
+            if (balances[person] < 0) {
+                payers.push({ person, amount: Math.abs(balances[person]) });
+            } else if (balances[person] > 0) {
+                receivers.push({ person, amount: balances[person] });
+            }
+        }
+
+        while (payers.length > 0 && receivers.length > 0) {
+            const payer = payers[0];
+            const receiver = receivers[0];
+
+            const payment = Math.min(payer.amount, receiver.amount);
+
+            resultText += `
+                <tr>
+                    <td>${payer.person}</td>
+                    <td>${payment}</td>
+                    <td>${receiver.person}</td>
+                </tr>
+            `;
+
+            payer.amount -= payment;
+            receiver.amount -= payment;
+
+            if (payer.amount === 0) {
+                payers.shift();
+            }
+
+            if (receiver.amount === 0) {
+                receivers.shift();
+            }
+        }
+
+        resultText += `
+                </tbody>
+            </table>
+        `;
+
+        document.getElementById('result').innerHTML = resultText;
+    }
+
+    function resetExpenses() {
+        localStorage.removeItem('expenses');
+        document.getElementById('result').innerHTML = 'Expenses have been reset.';
+        alert('All expenses have been reset.');
+    }
+</script>
+
+</body>
+</html>
